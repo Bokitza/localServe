@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Enter password</title>
+  <style>
+    :root {
+      --bg: #12140f;
+      --card: #1c2118;
+      --ink: #f4f1e8;
+      --muted: #b7b3a6;
+      --accent: #d8ff3e;
+      --line: #2e3528;
+      --danger: #ff8a7a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font: 16px/1.45 "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    form {
+      width: min(92vw, 420px);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px;
+    }
+    h1 { margin: 0 0 8px; font-size: 1.6rem; }
+    p { color: var(--muted); margin: 0 0 18px; }
+    input, button {
+      width: 100%;
+      font: inherit;
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    input {
+      border: 1px solid var(--line);
+      background: #12140f;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+    button {
+      border: 0;
+      background: var(--accent);
+      color: #12140f;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .error { color: var(--danger); min-height: 1.3em; margin: 0 0 12px; }
+  </style>
+</head>
+<body>
+  <form method="post" action="/login" autocomplete="off">
+    <h1>This folder is locked</h1>
+    <p>Enter the password to see files you can download.</p>
+    <p class="error">{{error}}</p>
+    <input type="password" name="password" placeholder="Password" required autofocus />
+    <button type="submit">Continue</button>
+  </form>
+</body>
+</html>

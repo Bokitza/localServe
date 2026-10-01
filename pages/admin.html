@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Local Serve</title>
+  <style>
+    :root {
+      --bg: #12140f;
+      --card: #1c2118;
+      --ink: #f4f1e8;
+      --muted: #b7b3a6;
+      --accent: #d8ff3e;
+      --line: #2e3528;
+      --danger: #ff8a7a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font: 16px/1.45 "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #2a331c 0%, transparent 55%),
+        var(--bg);
+    }
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+    h1 { font-size: 2rem; margin: 0 0 8px; letter-spacing: -0.03em; }
+    p.lede { color: var(--muted); margin: 0 0 28px; }
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+    label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+    .row { display: flex; gap: 8px; }
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #12140f;
+      color: var(--ink);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font: inherit;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+      background: var(--accent);
+      color: #12140f;
+      white-space: nowrap;
+    }
+    button.secondary { background: #2a331c; color: var(--ink); }
+    button.danger { background: var(--danger); }
+    .actions { display: flex; gap: 8px; margin-top: 16px; }
+    .link-box {
+      display: none;
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: 12px;
+      background: #12140f;
+      border: 1px dashed var(--accent);
+      word-break: break-all;
+    }
+    .link-box strong { display: block; margin-bottom: 6px; }
+    .link-box .actions { margin-top: 12px; }
+    .status { color: var(--muted); min-height: 1.4em; margin-top: 12px; }
+    .status.error { color: var(--danger); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Local Serve</h1>
+    <p class="lede">Pick a folder on this computer. People on your Wi‑Fi can download its files after entering the password.</p>
+
+    <section>
+      <label for="directory">Folder</label>
+      <div class="row">
+        <input id="directory" placeholder="/Users/you/Downloads" />
+        <button type="button" class="secondary" id="pick">Choose</button>
+      </div>
+
+      <label for="password" style="margin-top:16px">Guest password</label>
+      <input id="password" type="password" autocomplete="new-password" placeholder="Required on every visit" />
+
+      <div class="actions">
+        <button type="button" id="start">Start sharing</button>
+        <button type="button" class="danger" id="stop">Stop</button>
+      </div>
+      <p class="status" id="status"></p>
+      <div class="link-box" id="linkBox">
+        <strong>Guest link</strong>
+        <div id="links"></div>
+        <div class="actions">
+          <button type="button" class="secondary" id="copy">Copy first link</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const directoryInput = document.getElementById("directory");
+    const passwordInput = document.getElementById("password");
+    const statusEl = document.getElementById("status");
+    const linkBox = document.getElementById("linkBox");
+    const linksEl = document.getElementById("links");
+
+    function setStatus(message, isError) {
+      statusEl.textContent = message;
+      statusEl.classList.toggle("error", Boolean(isError));
+    }
+
+    async function refresh() {
+      const response = await fetch("/admin/api/status");
+      const data = await response.json();
+      if (data.directory) directoryInput.value = data.directory;
+      if (data.sharing && data.links.length) {
+        linksEl.innerHTML = data.links.map((link) => `<div>${link}</div>`).join("");
+        linkBox.style.display = "block";
+        setStatus(`Sharing ${data.file_count} file${data.file_count === 1 ? "" : "s"}.`);
+      } else {
+        linkBox.style.display = "none";
+      }
+    }
+
+    document.getElementById("pick").onclick = async () => {
+      setStatus("Opening folder picker…");
+      const response = await fetch("/admin/api/pick-folder", { method: "POST" });
+      const data = await response.json();
+      if (data.path) {
+        directoryInput.value = data.path;
+        setStatus("Folder selected.");
+      } else {
+        setStatus("No folder selected. You can paste a path instead.");
+      }
+    };
+
+    document.getElementById("start").onclick = async () => {
+      const response = await fetch("/admin/api/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          directory: directoryInput.value,
+          password: passwordInput.value,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setStatus(data.error || "Could not start sharing.", true);
+        return;
+      }
+      await refresh();
+    };
+
+    document.getElementById("stop").onclick = async () => {
+      await fetch("/admin/api/stop", { method: "POST" });
+      setStatus("Sharing stopped.");
+      linkBox.style.display = "none";
+    };
+
+    document.getElementById("copy").onclick = async () => {
+      const first = linksEl.querySelector("div");
+      if (!first) return;
+      await navigator.clipboard.writeText(first.textContent);
+      setStatus("Link copied.");
+    };
+
+    refresh();
+  </script>
+</body>
+</html>

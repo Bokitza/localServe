@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{folder}}</title>
+  <style>
+    :root {
+      --bg: #12140f;
+      --card: #1c2118;
+      --ink: #f4f1e8;
+      --muted: #b7b3a6;
+      --accent: #d8ff3e;
+      --line: #2e3528;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font: 16px/1.45 "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    main { max-width: 640px; margin: 0 auto; padding: 48px 20px; }
+    h1 { margin: 0 0 8px; }
+    p { color: var(--muted); }
+    ul { list-style: none; padding: 0; margin: 24px 0 0; }
+    li {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+    a { color: var(--accent); text-decoration: none; font-weight: 650; overflow-wrap: anywhere; }
+    span { color: var(--muted); white-space: nowrap; }
+    .empty { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>{{folder}}</h1>
+    <p>Tap a file to download it.</p>
+    <ul>{{files}}</ul>
+  </main>
+</body>
+</html>
